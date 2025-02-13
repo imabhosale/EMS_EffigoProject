@@ -1,11 +1,15 @@
 package com.ems.model;
 
+import lombok.Data;
+
 /**
  * Represents an authentication token.
  */
+@Data
 public class AuthToken {
     private String token;
 
+    private long id;
     /**
      * Constructs a new AuthToken object.
      */
@@ -35,7 +39,8 @@ public class AuthToken {
      * 
      * @param token the authentication token to be set
      */
-    public void setToken(String token) {
+    public void setToken(String token,long id) {
         this.token = token;
+        this.id=id;
     }
 }

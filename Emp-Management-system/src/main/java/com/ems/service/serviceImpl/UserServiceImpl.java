@@ -64,6 +64,13 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	public List<User> findAll() {
 		return (List<User>) userDao.findAll();
 	}
+	
+	
+	@Override
+	public List<User> findAllAdmins() {
+	    return userDao.findAllAdmins(); // 
+	}
+	
 
 
 	
@@ -82,13 +89,25 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 			roles.add(adminRole);
 		}
 
+
 		List<String> adminList = new ArrayList<>();
 		adminList.add("2110030056@klh.edu.in");
 
 		user.setRoles(roles);
 
 		User user2 = userDao.save(user);
-	//	emailService.sendEmailToAdmins(adminList, user2.getFirstName());
+//		emailService.sendEmailToAdmins(adminList, user2.getFirstName());
+		
+		  List<User> adminEmaiList=findAllAdmins();
+          
+          List<String> emaiList=adminEmaiList.stream()
+          .map(us -> us.getEmail())
+          .toList();
+          
+          System.out.println(emaiList);
+          
+
+          emailService.sendEmailToAdmins(emaiList, user2.getFirstName());
 		return user2;
 
 	}
@@ -110,10 +129,22 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 		User savedUser = userDao.save(user);
 
+
 		List<String> adminList = new ArrayList<>();
 		adminList.add("2110030056@klh.edu.in");
 
-		//emailService.sendEmailToAdmins(adminList, savedUser.getFirstName());
+		
+		  List<User> adminEmaiList=findAllAdmins();
+          
+          List<String> emaiList=adminEmaiList.stream()
+          .map(us -> us.getEmail())
+          .toList();
+          
+          System.out.println(emaiList);
+          
+
+
+          emailService.sendEmailToAdmins(emaiList, savedUser.getFirstName());
 		return savedUser;
 	}
 	
@@ -155,5 +186,52 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	}
 
 
+
+	
+	
+	
+//	@Transactional
+//	@Override
+//	public User updateUser(Long userId, UserDto updatedUserDto) {
+//	    User existingUser = userDao.findById(userId)
+//	            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+//
+//	    // Update allowed fields
+//	    if (updatedUserDto.getFirstName() != null) {
+//	        existingUser.setFirstName(updatedUserDto.getFirstName());
+//	    }
+//	    if (updatedUserDto.getLastName() != null) {
+//	        existingUser.setLastName(updatedUserDto.getLastName());
+//	    }
+//	    if (updatedUserDto.getMobile() != null) {
+//	        existingUser.setMobile(updatedUserDto.getMobile());
+//	    }
+//	    if (updatedUserDto.getStatus() != null) {
+//	        try {
+//	            UserStatus newStatus = UserStatus.valueOf(updatedUserDto.getStatus().toUpperCase()); // Convert String to Enum
+//	            existingUser.setStatus(newStatus);
+//	        } catch (IllegalArgumentException e) {
+//	            throw new RuntimeException("Invalid user status: " + updatedUserDto.getStatus());
+//	        }
+//	    }
+//
+//	    // Save updated user
+//	    return userDao.save(existingUser);
+//	}
+
+
+//	@Override
+//	public Optional<User> findByid(Long id) {
+//		Optional<User> user=userDao.findById(id);
+//		return user;
+//	}
+
+	
+	@Override
+	public Optional<User> findByEmail(String email) {
+	    return userDao.findByEmail(email);
+	}
+	
+	
 
 }

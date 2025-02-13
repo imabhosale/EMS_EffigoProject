@@ -33,4 +33,10 @@ public interface UserService {
 
 	public UserDetails loadUserByUsername(String email);
 
+	List<User> findAllAdmins();
+
+	// public List<User> uploadAndCreateUsers(MultipartFile file);
+
+	Optional<User> findByEmail(String email);
+
 }

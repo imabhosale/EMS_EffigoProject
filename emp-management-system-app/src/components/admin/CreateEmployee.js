@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/Config";
 
-export default function CreateEmployee({ fetchUsers = () => {} }) { // ✅ Fallback function
+export default function CreateEmployee({ fetchUsers = () => {} }) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -29,7 +29,6 @@ export default function CreateEmployee({ fetchUsers = () => {} }) { // ✅ Fallb
 
       console.log("API Response:", response.data);
 
-      // ✅ Success message
       setMessage({ text: "User created successfully!", type: "success" });
 
       // Clear form
@@ -42,21 +41,31 @@ export default function CreateEmployee({ fetchUsers = () => {} }) { // ✅ Fallb
         status: "PENDING",
       });
 
-      fetchUsers(); // ✅ No error, even if it's missing
+      fetchUsers();
     } catch (error) {
       console.error("Error creating user:", error);
-      setMessage({
-        text: error.response?.data?.message || "An error occurred.",
-        type: "danger",
-      });
+
+      let errorMessage = "An error occurred.";
+      
+      if (error.response) {
+        if (error.response.data?.message) {
+          errorMessage = error.response.data.message; // Backend error message
+        } else if (error.response.status === 409) {
+          errorMessage = "Email already exists. Please use a different email.";
+        } else {
+          errorMessage = `Error ${error.response.status}: ${error.response.statusText}`;
+        }
+      }
+
+      setMessage({ text: errorMessage, type: "danger" });
     }
   };
 
   return (
     <div className="card p-4 shadow">
-      <h2 className="text-center mb-4">Create Employee</h2>
+      <h2 className="text-center mb-4">Create User</h2>
 
-      {/* ✅ Display success/error messages */}
+      {/* ✅ Display error messages */}
       {message.text && (
         <div className={`alert alert-${message.type}`} role="alert">
           {message.text}

@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {jwtDecode} from "jwt-decode";  // ✅ Fixed import
+import { jwtDecode } from "jwt-decode";
 import AdminDashboard from "./admin/AdminDashboard";
 import UserDashboard from "./user/UserDashboard";
-import EmployeeDashboard from "./user/EmployeeDashboard";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Dashboard() {
-  const [role, setRole] = useState("USER");  
-  const [username, setUsername] = useState("");  // ✅ Added username
+  const [role, setRole] = useState("USER");
+  const [username, setUsername] = useState("User");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
+    const token = sessionStorage.getItem("jwtToken");
 
     if (!token) {
       console.warn("No token found, redirecting...");
@@ -23,7 +23,7 @@ export default function Dashboard() {
       const decodedToken = jwtDecode(token);
       console.log("Decoded Token:", decodedToken);
 
-      setUsername(decodedToken.sub || "User");  
+      setUsername(decodedToken.sub || "User");
 
       let roles = decodedToken.roles || "";
       if (typeof roles === "string") {
@@ -33,7 +33,6 @@ export default function Dashboard() {
       console.log("User Roles:", roles);
 
       if (roles.includes("ROLE_ADMIN")) setRole("ADMIN");
-      else if (roles.includes("ROLE_EMPLOYEE")) setRole("EMPLOYEE");
       else setRole("USER");
     } catch (error) {
       console.error("Error decoding token:", error);
@@ -48,23 +47,25 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 p-6">
-      <div className="bg-white p-6 shadow-lg rounded-lg w-96 text-center">
-        <h2 className="text-2xl font-bold text-gray-800">Welcome, {username} 👋</h2>
-        <p className="text-gray-600 mb-4">This is your professional dashboard.</p>
+    <div className="container d-flex justify-content-center align-items-center min-vh-100 bg-light">
+      <div className="card shadow-lg border-0 rounded-4 p-4" style={{ width: "450px" }}>
+        <div className="card-body text-center">
+          <h2 className="card-title text-primary fw-bold mb-3">Welcome, {username} 👋</h2>
+          <p className="text-muted">This is your professional dashboard.</p>
 
-        <div className="mt-4">
-          {role === "ADMIN" && <AdminDashboard />}
-          {role === "EMPLOYEE" && <EmployeeDashboard/>}
-          {role === "USER" && <UserDashboard />}
+          {/* Role-based dashboard */}
+          <div className="mt-4">
+            {role === "ADMIN" && <AdminDashboard />}
+            {role === "USER" && <UserDashboard />}
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="btn btn-danger w-100 mt-4 fw-semibold"
+          >
+            Logout
+          </button>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
       </div>
     </div>
   );

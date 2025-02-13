@@ -55,8 +55,4 @@ public class User {
     }
 }
 
-enum UserStatus {
-    ACTIVE,
-    PENDING,
-    INACTIVE
-}
+

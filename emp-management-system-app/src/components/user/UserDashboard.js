@@ -1,47 +1,73 @@
 import { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is imported
-import UserSidebar from "../UserSidebar";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import UserSidebar from "./UserSidebar";
+import UserHomePage from "./UserHomePage";
+import Dashboard from "../Dashboard";
+import EditUserProfileOwn from "./EditUserProfileOwn";
+import UserProfile from "./UserProfile";
 
 export default function UserDashboard() {
-  const [username, setUsername] = useState("");
+  const [userEmail, setUserEmail] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    if (token) {
-      try {
-        const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT
-        setUsername(decodedToken.sub || "User"); // Use 'sub' as username
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
+    const token = sessionStorage.getItem("jwtToken");
+
+    if (!token) {
+      console.error("No token found in UserDashboard, redirecting...");
+      navigate("/login");
+      return;
     }
-  }, []);
+
+    try {
+      const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT
+      console.log("Decoded Token:", decodedToken);
+
+      if (!decodedToken || !decodedToken.sub) {
+        console.error("Invalid token format, redirecting...");
+        navigate("/login");
+        return;
+      }
+
+      const email = decodedToken.sub; // ✅ Extract email correctly
+      setUserEmail(email);
+
+      const roles = decodedToken.roles
+        ? decodedToken.roles.split(",").map(role => role.trim())
+        : [decodedToken.role || "USER"];
+
+      console.log("User Roles:", roles);
+
+      if (!roles.includes("ROLE_USER")) {
+        console.error("User does not have required role, redirecting...");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
     <div className="d-flex">
-      {/* Sidebar */}
-      <UserSidebar />
+      {/* Sidebar - Fixed Position */}
+      <UserSidebar userEmail={userEmail} /> {/* ✅ Pass email to sidebar */}
 
-      {/* Main Dashboard */}
-      <div className="container-fluid p-4">
+      {/* Main Content Area */}
+      <div className="flex-grow-1 p-4" style={{ marginLeft: "250px" }}>
         <div className="card shadow-lg p-4">
-          <h1 className="text-center">Welcome, {username} 👋</h1>
+          <h1 className="text-center">Welcome, User 👋</h1>
           <p className="text-muted text-center">You are logged in as a User.</p>
-
-          <div className="mt-4 border-top pt-4 text-center">
-            <h2 className="text-primary">User Dashboard</h2>
-            <p className="text-secondary">Manage your profile, view your tasks, and stay updated.</p>
-          </div>
-
-          <div className="mt-4 d-flex justify-content-center gap-3">
-            <button className="btn btn-primary btn-lg">
-              <i className="bi bi-person-circle me-2"></i> View Profile
-            </button>
-            <button className="btn btn-success btn-lg">
-              <i className="bi bi-list-task me-2"></i> My Tasks
-            </button>
-          </div>
         </div>
+
+        {/* ✅ Fixed Routing */}
+        <Routes>
+          <Route path="/" element={<UserHomePage />} />
+          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+          <Route path="/profile/:email" element={<UserProfile />} />
+          <Route path="/edit/:id" element={<EditUserProfileOwn />} />
+        </Routes>
       </div>
     </div>
   );

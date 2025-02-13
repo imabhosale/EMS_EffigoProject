@@ -24,7 +24,7 @@ export default function useAuth(requiredRole) {
       console.log("User Roles:", trimmedRoles);
 
       if (!trimmedRoles.includes(requiredRole)) {
-        console.error("Unauthorized access. Redirecting to login.");
+        console.error(" comming Unauthorized access. Redirecting to login.");
         navigate("/login");
       }
     } catch (error) {

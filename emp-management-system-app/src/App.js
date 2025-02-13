@@ -10,7 +10,6 @@ import Footer from "./components/Footer";
 import AdminDashboard from "./components/admin/AdminDashboard";
 
 // User Components
-import EmployeeDashboard from "./components/user/EmployeeDashboard";
 import UserDashboard from "./components/user/UserDashboard";
 
 function App() {
@@ -32,9 +31,7 @@ function App() {
 
   {/* ✅ Fix: Change /admin-dashboard to /admin */}
   <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
-
-  {/* User Routes */}
-  <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+  <Route path="/user-dashboard/*" element={<UserDashboard />} />
   <Route path="/user-dashboard" element={<UserDashboard />} />
 </Routes>
 
