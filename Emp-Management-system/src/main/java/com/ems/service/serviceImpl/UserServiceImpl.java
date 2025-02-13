@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		return (List<User>) userDao.findAll();
 	}
 
+
+	
 	@Transactional
 	@Override
 	public User save(UserDto userDto) {
@@ -74,13 +77,13 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		Role userRole = roleService.findByName("USER");
 		roles.add(userRole);
 
-		if (userDto.getEmail().endsWith("@mitaoe.ac.in")) {
+		if (userDto.getEmail().endsWith("@klh.edu.in")) {
 			Role adminRole = roleService.findByName("ADMIN");
 			roles.add(adminRole);
 		}
 
 		List<String> adminList = new ArrayList<>();
-		adminList.add("abhishek.bhosale@mitaoe.ac.in");
+		adminList.add("2110030056@klh.edu.in");
 
 		user.setRoles(roles);
 
@@ -108,10 +111,49 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		User savedUser = userDao.save(user);
 
 		List<String> adminList = new ArrayList<>();
-		adminList.add("abhishek.bhosale@mitaoe.ac.in");
+		adminList.add("2110030056@klh.edu.in");
 
 		//emailService.sendEmailToAdmins(adminList, savedUser.getFirstName());
 		return savedUser;
 	}
+	
+	
+	@Transactional
+	@Override
+	public User updateUser(Long userId, UserDto updatedUserDto) {
+	    User existingUser = userDao.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+	    // Update allowed fields
+	    if (updatedUserDto.getFirstName() != null) {
+	        existingUser.setFirstName(updatedUserDto.getFirstName());
+	    }
+	    if (updatedUserDto.getLastName() != null) {
+	        existingUser.setLastName(updatedUserDto.getLastName());
+	    }
+	    if (updatedUserDto.getMobile() != null) {
+	        existingUser.setMobile(updatedUserDto.getMobile());
+	    }
+//	    if (updatedUserDto.getStatus() != null) {
+//	        existingUser.setStatus(updatedUserDto.getStatus());
+//	    }
+
+	    // Save updated user
+	    return userDao.save(existingUser);
+	}
+
+	@Override
+	public Optional<User> findByid(Long id) {
+		Optional<User> user=userDao.findById(id);
+		return user;
+	}
+	
+	@Override
+	public User getUserByEmail(String email) {
+	    return userDao.findByEmail(email)
+	            .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+	}
+
+
 
 }
