@@ -23,4 +23,8 @@ public interface UserDao extends CrudRepository<User, Long> {
 		List<User> findByStatus(@Param("status") UserStatus status);
 	 
 	 Optional<User> findByEmail(String email);
+	 
+	 @Query("SELECT u FROM User u LEFT JOIN FETCH u.files WHERE u.id = :id")
+	 Optional<User> findByIdWithFiles(@Param("id") Long id);
+
 }

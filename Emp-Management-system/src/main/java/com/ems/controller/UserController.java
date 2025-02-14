@@ -2,8 +2,11 @@ package com.ems.controller;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -136,6 +139,7 @@ public class UserController {
 		return ResponseEntity.ok(updatedUser);
 	}
 
+
 	@GetMapping("/find/{email}")
 	public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
 		// ✅ Decode email properly
@@ -145,5 +149,26 @@ public class UserController {
 		Optional<User> user = userService.findByEmail(decodedEmail);
 		return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
 	}
+	
+	@GetMapping("/{userId}/files")
+	public ResponseEntity<List<Map<String, String>>> getUserFiles(@PathVariable Long userId) {
+	    Optional<User> userOptional = userService.findByid(userId);
+	    User user = userOptional.get();
+	    
+	    // Create a list of maps containing both filename and file URL
+	    List<Map<String, String>> fileDetails = user.getFiles().stream()
+	            .map(file -> {
+	                Map<String, String> fileMap = new HashMap<>();
+	                fileMap.put("name", file.getName());  // Assuming 'getName()' returns the file name
+	                fileMap.put("fileUrl", file.getFileUrl());  // Assuming 'getFileUrl()' returns the URL
+	                return fileMap;
+	            })
+	            .collect(Collectors.toList());
+
+	    return ResponseEntity.ok(fileDetails);
+	}
+
+	
+
 
 }
