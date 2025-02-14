@@ -80,7 +80,7 @@ export default function EditUserProfileOwn() {
       });
 
       alert("User updated successfully!");
-      navigate(`/profile/${encodeURIComponent(editedUser.email)}`); // ✅ Redirect back to Profile Page
+      navigate(`/user-dashboard/profile/${encodeURIComponent(editedUser.email)}`); // ✅ Redirect back to Profile Page
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Failed to update user.");

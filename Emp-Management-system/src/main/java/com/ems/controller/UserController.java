@@ -57,6 +57,7 @@ public class UserController {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginUser.getEmail(), loginUser.getPassword()));
 
+
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			String token = jwtTokenUtil.generateToken(authentication);
 			return ResponseEntity.ok(new AuthToken(token));

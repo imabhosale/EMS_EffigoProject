@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/Config";
+import { FaEdit } from "react-icons/fa";
 
 export default function EditUserProfile() {
   const { userId } = useParams(); // Assuming userId is actually email
@@ -18,37 +19,28 @@ export default function EditUserProfile() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    console.log("Fetching user details...");
     fetchUser();
   }, [userId]);
 
   const fetchUser = async () => {
     try {
       const token = sessionStorage.getItem("jwtToken");
-      console.log("Token:", token);
 
       if (!token) {
-        console.error("JWT token not found!");
         alert("User is not authenticated.");
         return;
       }
 
-      console.log(`Fetching user details for userId: ${userId}`);
       const response = await axios.get(`${API_ENDPOINTS.GET_USERBYID}/${encodeURIComponent(userId)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("User data received:", response.data);
-
-      // Extract roles correctly
       let userRoles = [];
       if (Array.isArray(response.data.roles)) {
         userRoles = response.data.roles.map((role) => role.name.trim());
       } else if (typeof response.data.role === "string") {
         userRoles = [response.data.role.trim()];
       }
-
-      console.log("Processed User Roles:", userRoles);
 
       setUser(response.data);
       setEditedUser({
@@ -59,16 +51,13 @@ export default function EditUserProfile() {
         status: response.data.status || "",
       });
 
-      // Check if user has the ADMIN role
       setIsAdmin(userRoles.includes("ADMIN"));
     } catch (error) {
-      console.error("Error fetching user details:", error);
       alert("Failed to fetch user details.");
     }
   };
 
   const handleChange = (field, value) => {
-    console.log(`Updating field: ${field} with value: ${value}`);
     setEditedUser({ ...editedUser, [field]: value });
   };
 
@@ -83,14 +72,15 @@ export default function EditUserProfile() {
 
     try {
       const token = sessionStorage.getItem("jwtToken");
-      await axios.put(`http://localhost:8999/users/find/${(userId)}`, editedUser, {
+      await axios.put(`http://localhost:8999/users/edit/${userId}`, editedUser, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       alert("User updated successfully!");
       setIsEditing(false);
+
+      navigate(`/admin-dashboard/profile/${userId}`);
     } catch (error) {
-      console.error("Error updating user:", error);
       alert("Failed to update user.");
     }
   };
@@ -99,7 +89,15 @@ export default function EditUserProfile() {
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center text-primary fw-bold">User Profile</h2>
+      <div className="d-flex justify-content-between align-items-center">
+        <h2 className="text-primary fw-bold">User Profile</h2>
+        {!isAdmin && (
+          <button className="btn btn-outline-primary" onClick={() => setIsEditing(!isEditing)}>
+            <FaEdit size={20} />
+          </button>
+        )}
+      </div>
+
       <div className="card p-4 shadow-sm">
         <div className="row">
           <div className="col-md-6">
@@ -162,18 +160,31 @@ export default function EditUserProfile() {
 
         {!isAdmin && (
           <div className="text-center mt-3">
-            {!isEditing ? (
-              <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
-                Edit Profile
-              </button>
-            ) : (
-              <button className="btn btn-success" onClick={handleSave}>
+            {isEditing && (
+              <button className="btn btn-success me-2" onClick={handleSave}>
                 Save Changes
               </button>
             )}
           </div>
         )}
       </div>
+
+     {/* Buttons for navigating to different components */}
+<div className="text-center mt-4">
+  <button
+    className="btn btn-info me-2"
+    onClick={() => navigate(`/admin-dashboard/upload-documents/${userId}`)}
+  >
+    Upload Documents
+  </button>
+  <button
+    className="btn btn-warning"
+    onClick={() => navigate(`/admin-dashboard/view-documents/${userId}`)}
+  >
+    View Documents
+  </button>
+</div>
+
     </div>
   );
 }

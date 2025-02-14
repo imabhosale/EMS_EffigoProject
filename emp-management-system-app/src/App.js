@@ -35,7 +35,7 @@ function App() {
   <Route path="/user-dashboard" element={<UserDashboard />} />
 </Routes>
 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

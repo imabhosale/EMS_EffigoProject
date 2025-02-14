@@ -10,6 +10,8 @@ import ManageUsers from "./ManageUsers";
 import UploadCSV from "./UploadCSV"; // Import the new component
 import EditUserProfile from "./EditUserProfile";
 import ManageUserApproval from "./ManageUserApproval";
+import UploadDocuments from "./UploadDocuments";
+import ViewDocuments from "./ViewDocuments";
 
 export default function AdminDashboard() {
   useAuth("ROLE_ADMIN"); // Ensure only Admin can access this page
@@ -47,8 +49,11 @@ export default function AdminDashboard() {
           <Route path="admin-approvals" element={<ManageUserApproval/>} />
     
           <Route path="manage-users" element={<ManageUsers />} />
-          <Route path="upload-csv" element={<UploadCSV />} /> {/* Add the route for CSV upload */}
-        </Routes>
+          <Route path="upload-csv" element={<UploadCSV />} /> 
+          
+          <Route path="upload-documents/:userId" element={<UploadDocuments />} />
+        <Route path="view-documents/:userId" element={<ViewDocuments />} />
+           </Routes>
       </div>
     </div>
   );

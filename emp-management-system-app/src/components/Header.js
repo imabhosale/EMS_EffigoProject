@@ -22,6 +22,8 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
   }, [isLoggedIn]); // Re-run when login state changes
 
   const handleLogout = () => {
+    const confirmLogout = window.confirm("Are you sure you want to log out?");
+    if (!confirmLogout) return;
     sessionStorage.removeItem("jwtToken");
     setIsLoggedIn(false);
     navigate("/login");

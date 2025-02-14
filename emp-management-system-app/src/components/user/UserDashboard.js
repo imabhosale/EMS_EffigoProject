@@ -57,7 +57,7 @@ export default function UserDashboard() {
       {/* Main Content Area */}
       <div className="flex-grow-1 p-4" style={{ marginLeft: "250px" }}>
         <div className="card shadow-lg p-4">
-          <h1 className="text-center">Welcome, User 👋</h1>
+          {/* <h1 className="text-center">Welcome, User 👋</h1> */}
           <p className="text-muted text-center">You are logged in as a User.</p>
         </div>
 

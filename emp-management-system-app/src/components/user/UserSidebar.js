@@ -21,7 +21,7 @@ export default function UserSidebar({ userEmail }) {
           </li>
         )}
         <li className="nav-item">
-          <Link className="nav-link text-white" to="/user-tasks">My Tasks</Link>
+          <Link className="nav-link text-white" to="/user-dashboard/user-tasks">My Tasks</Link>
         </li>
       </ul>
     </div>
