@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -19,6 +21,9 @@ import jakarta.annotation.Resource;
 
 @Configuration
 @EnableWebSecurity
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
+
 public class WebSecurityConfig {
 
     @Resource(name = "userService")
@@ -36,6 +41,7 @@ public class WebSecurityConfig {
             .authorizeRequests()
             .requestMatchers("/users/authenticate", "/users/register").permitAll()
             .requestMatchers("/users/find/all").hasRole("ADMIN")
+            .requestMatchers("/users/stats").hasRole("ADMIN")
             .anyRequest().authenticated()
             .and()
             .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()

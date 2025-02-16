@@ -1,24 +1,44 @@
 import React, { useState, useEffect } from "react";
-import ApiService from "./ApiService";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const ViewDocuments = () => {
+  const { userId } = useParams(); // Email is used as userId
   const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await ApiService.getAllFiles();
+        const token = sessionStorage.getItem("jwtToken");
+        if (!token) {
+          setError("User is not authenticated.");
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:8999/users/find/${encodeURIComponent(userId)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
         setFiles(response.data);
-      } catch (error) {
-        console.error("Error fetching files:", error);
+      } catch (err) {
+        setError("Error fetching files.");
+        console.error("Error fetching files:", err);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchFiles();
-  }, []);
+  }, [userId]);
+
+  if (loading) return <p className="text-center mt-4">Loading documents...</p>;
+  if (error) return <p className="text-center mt-4 text-danger">{error}</p>;
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center">Uploaded Documents</h2>
+      <h2 className="text-center">User Documents</h2>
       {files.length === 0 ? (
         <p className="text-center">No files uploaded yet.</p>
       ) : (

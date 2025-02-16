@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/Config";
 
-export default function CreateEmployee({ fetchUsers = () => {} }) {
+export default function CreateEmployee() {
+  const navigate = useNavigate(); // ✅ Hook for navigation
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -13,12 +16,42 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
   });
 
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" }); // ✅ Clear errors when user types
+  };
+
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.firstName.trim()) newErrors.firstName = "First Name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last Name is required";
+    if (!formData.password.trim()) newErrors.password = "Password is required";
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (!formData.mobile.trim()) {
+      newErrors.mobile = "Mobile number is required";
+    } else if (!/^\d{10}$/.test(formData.mobile)) {
+      newErrors.mobile = "Mobile number must be 10 digits";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleCreate = async () => {
+    if (!validateForm()) {
+      setMessage({ text: "Please correct the errors before submitting.", type: "danger" });
+      return;
+    }
+
     try {
       const token = sessionStorage.getItem("jwtToken");
       console.log("Token:", token);
@@ -29,24 +62,14 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
 
       console.log("API Response:", response.data);
 
-      setMessage({ text: "User created successfully!", type: "success" });
+      setMessage({ text: "User created successfully! Redirecting...", type: "success" });
 
-      // Clear form
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        mobile: "",
-        password: "",
-        status: "PENDING",
-      });
-
-      fetchUsers();
+      // ✅ Wait for 2 seconds, then navigate to the admin dashboard
+      setTimeout(() => navigate("/admin-dashboard/find-all"), 2000);
     } catch (error) {
       console.error("Error creating user:", error);
 
       let errorMessage = "An error occurred.";
-      
       if (error.response) {
         if (error.response.data?.message) {
           errorMessage = error.response.data.message; // Backend error message
@@ -56,7 +79,6 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
           errorMessage = `Error ${error.response.status}: ${error.response.statusText}`;
         }
       }
-
       setMessage({ text: errorMessage, type: "danger" });
     }
   };
@@ -65,7 +87,7 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
     <div className="card p-4 shadow">
       <h2 className="text-center mb-4">Create User</h2>
 
-      {/* ✅ Display error messages */}
+      {/* ✅ Display success/error messages */}
       {message.text && (
         <div className={`alert alert-${message.type}`} role="alert">
           {message.text}
@@ -80,8 +102,9 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
             placeholder="First Name"
             value={formData.firstName}
             onChange={handleChange}
-            className="form-control"
+            className={`form-control ${errors.firstName ? "is-invalid" : ""}`}
           />
+          {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
         </div>
 
         <div className="col-md-6">
@@ -91,8 +114,9 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
             placeholder="Last Name"
             value={formData.lastName}
             onChange={handleChange}
-            className="form-control"
+            className={`form-control ${errors.lastName ? "is-invalid" : ""}`}
           />
+          {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
         </div>
 
         <div className="col-md-6">
@@ -103,8 +127,9 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            className="form-control"
+            className={`form-control ${errors.email ? "is-invalid" : ""}`}
           />
+          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
         </div>
 
         <div className="col-md-6">
@@ -114,8 +139,9 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
             placeholder="Mobile"
             value={formData.mobile}
             onChange={handleChange}
-            className="form-control"
+            className={`form-control ${errors.mobile ? "is-invalid" : ""}`}
           />
+          {errors.mobile && <div className="invalid-feedback">{errors.mobile}</div>}
         </div>
 
         <div className="col-md-6">
@@ -126,8 +152,9 @@ export default function CreateEmployee({ fetchUsers = () => {} }) {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="form-control"
+            className={`form-control ${errors.password ? "is-invalid" : ""}`}
           />
+          {errors.password && <div className="invalid-feedback">{errors.password}</div>}
         </div>
 
         <div className="col-md-6">

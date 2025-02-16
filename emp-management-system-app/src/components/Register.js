@@ -1,17 +1,21 @@
-import { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Register() {
+  const navigate = useNavigate(); // Hook for navigation
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     mobile: "",
     password: "",
-    status: "",
+    // status: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   const validateForm = () => {
     let newErrors = {};
@@ -43,9 +47,17 @@ export default function Register() {
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
+  const showToast = (message, type) => {
+    setToast({ show: true, message, type });
+
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "" });
+    }, 3000);
+  };
+
   const handleRegister = async () => {
     if (!validateForm()) {
-      alert("Please fix the errors before submitting.");
+      showToast("Please correct the errors before submitting.", "danger");
       return;
     }
 
@@ -58,12 +70,14 @@ export default function Register() {
 
       const data = await response.json();
       if (response.ok) {
-        alert("Registration successful! Please login.");
+        showToast("Registration successful! Redirecting to login...", "success");
+        setTimeout(() => navigate("/login"), 3000);
       } else {
-        alert("Registration failed: " + data.message);
+        showToast(data.message || "Registration failed. Try again.", "danger");
       }
     } catch (error) {
       console.error("Registration error:", error);
+      showToast("Something went wrong. Please try again later.", "danger");
     }
   };
 
@@ -72,13 +86,19 @@ export default function Register() {
       <div className="card shadow-lg p-4 w-50">
         <h2 className="text-center mb-3">Register</h2>
 
-        {Object.keys(errors).length > 0 && (
-          <div className="alert alert-danger">
-            {Object.values(errors).map((err, index) => (
-              <div key={index}>{err}</div>
-            ))}
+        {/* Bootstrap Toast (Position Adjusted Below Header) */}
+        <div
+          className={`toast align-items-center text-bg-${toast.type} position-fixed end-0 m-3 p-2 ${toast.show ? "show" : "hide"}`}
+          style={{ top: "80px", right: "20px", zIndex: 1050 }} 
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div className="d-flex">
+            <div className="toast-body">{toast.message}</div>
+            <button type="button" className="btn-close me-2 m-auto" onClick={() => setToast({ show: false })}></button>
           </div>
-        )}
+        </div>
 
         <div className="row">
           {/* Left Column */}
@@ -90,8 +110,9 @@ export default function Register() {
                 placeholder="Enter first name"
                 value={formData.firstName}
                 onChange={handleChange}
-                className="form-control"
+                className={`form-control ${errors.firstName ? "is-invalid" : ""}`}
               />
+              {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
             </div>
 
             <div className="mb-3">
@@ -102,8 +123,9 @@ export default function Register() {
                 placeholder="Enter email"
                 value={formData.email}
                 onChange={handleChange}
-                className="form-control"
+                className={`form-control ${errors.email ? "is-invalid" : ""}`}
               />
+              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
 
             <div className="mb-3">
@@ -114,8 +136,9 @@ export default function Register() {
                 placeholder="Enter password"
                 value={formData.password}
                 onChange={handleChange}
-                className="form-control"
+                className={`form-control ${errors.password ? "is-invalid" : ""}`}
               />
+              {errors.password && <div className="invalid-feedback">{errors.password}</div>}
             </div>
           </div>
 
@@ -128,8 +151,9 @@ export default function Register() {
                 placeholder="Enter last name"
                 value={formData.lastName}
                 onChange={handleChange}
-                className="form-control"
+                className={`form-control ${errors.lastName ? "is-invalid" : ""}`}
               />
+              {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
             </div>
 
             <div className="mb-3">
@@ -140,8 +164,9 @@ export default function Register() {
                 placeholder="Enter mobile number"
                 value={formData.mobile}
                 onChange={handleChange}
-                className="form-control"
+                className={`form-control ${errors.mobile ? "is-invalid" : ""}`}
               />
+              {errors.mobile && <div className="invalid-feedback">{errors.mobile}</div>}
             </div>
 
             <div className="mb-3">
@@ -150,13 +175,14 @@ export default function Register() {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="form-select"
+                className={`form-select ${errors.status ? "is-invalid" : ""}`}
               >
                 <option value="">Select Status</option>
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="PENDING">PENDING</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
+              {errors.status && <div className="invalid-feedback">{errors.status}</div>}
             </div>
           </div>
         </div>
@@ -164,6 +190,10 @@ export default function Register() {
         <button onClick={handleRegister} className="btn btn-success w-100">
           Register
         </button>
+
+        <p className="text-center mt-3">
+          Already have an account? <a href="/login">Login</a>
+        </p>
       </div>
     </div>
   );

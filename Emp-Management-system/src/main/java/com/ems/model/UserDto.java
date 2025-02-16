@@ -1,5 +1,7 @@
 package com.ems.model;
 
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 
 import lombok.AllArgsConstructor;
@@ -17,10 +19,12 @@ public class UserDto {
     private String mobile;
     private String password;
     private String status; // String type for easier API handling
+    private List<UserFileDTO> files;
 
     public static User convertToEntity(UserDto userDto) {
         ModelMapper modelMapper = new ModelMapper();
         User user = modelMapper.map(userDto, User.class);
+        
         
         // Convert String status to Enum
         try {

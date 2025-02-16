@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export default function UploadCSV() {
   const [csvFile, setCsvFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate(); // Initialize navigate function
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -15,9 +17,17 @@ export default function UploadCSV() {
       if (!validTypes.includes(file.type)) {
         setErrorMessage("Only CSV files are allowed.");
         setCsvFile(null);
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000); 
+        
       } else if (file.size > 5 * 1024 * 1024) { // Limit to 5MB
         setErrorMessage("File size should be under 5MB.");
         setCsvFile(null);
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } else {
         setErrorMessage("");
         setCsvFile(file);
@@ -50,8 +60,17 @@ export default function UploadCSV() {
       if (response.status === 200) {
         setSuccessMessage("File uploaded successfully!");
         setCsvFile(null);
+
+        // Redirect to admin dashboard after a short delay
+        setTimeout(() => {
+          navigate("/admin-dashboard/dashboard");
+        }, 1500);
       } else {
         setErrorMessage(response.data.message || "Error uploading the file.");
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       }
     } catch (error) {
       console.error("Upload error: ", error);

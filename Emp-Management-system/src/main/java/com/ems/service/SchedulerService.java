@@ -22,7 +22,7 @@ public class SchedulerService {
 	@Autowired
 	private UserDao userRepository;
 
-	@Scheduled(cron = "0 13 0 * * ?") //12 am midnight
+	@Scheduled(cron = "7 8 10 * * ?") //12 am midnight
 	public void updateUserStatusToActive() {
 		List<User> users = userRepository.findByStatus(UserStatus.PENDING);
 		for (User user : users) {

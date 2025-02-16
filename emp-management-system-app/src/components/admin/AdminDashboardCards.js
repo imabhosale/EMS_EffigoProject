@@ -1,6 +1,25 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { FaUserCheck, FaUserTimes, FaUserClock, FaBell } from "react-icons/fa";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { FaUserCheck, FaUserTimes, FaUserClock, FaBell } from 'react-icons/fa';
+
+// Create an Axios instance with JWT token in headers
+const api = axios.create({
+  baseURL: 'http://localhost:8999',
+});
+
+// Add a request interceptor to include the JWT token
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem('jwtToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export default function AdminDashboardCards() {
   const [stats, setStats] = useState({
@@ -9,34 +28,33 @@ export default function AdminDashboardCards() {
     pendingUsers: 0,
   });
   const [notifications, setNotifications] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("jwtToken"); // Get token from session storage
+    const fetchData = async () => {
+      try {
+        const statsResponse = await api.get('/users/stats');
+        setStats(statsResponse.data);
+      } catch (err) {
+        console.error('Error fetching user stats:', err);
+        setError('Failed to load user statistics.');
+      }
 
-    if (!token) {
-      console.error("No JWT token found, authentication required.");
-      return;
-    }
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
+      try {
+       // const notificationsResponse = await api.get('/notifications');
+      //  setNotifications(notificationsResponse.data);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+        setError('Failed to load notifications.');
+      }
     };
 
-    // Fetch user statistics
-    axios
-      .get("http://localhost:8999/users/stats", { headers })
-      .then((response) => setStats(response.data))
-      .catch((error) => console.error("Error fetching user stats:", error));
-
-    // Fetch notifications
-    axios
-      .get("http://localhost:8999/notifications", { headers })
-      .then((response) => setNotifications(response.data))
-      .catch((error) => console.error("Error fetching notifications:", error));
+    fetchData();
   }, []);
 
   return (
     <div className="row g-3">
+      {error && <div className="alert alert-danger">{error}</div>}
       {/* Active Users Card */}
       <div className="col-md-4">
         <div className="card shadow-sm border-0 bg-success text-white">
@@ -92,9 +110,7 @@ export default function AdminDashboardCards() {
                   </li>
                 ))
               ) : (
-                <li className="list-group-item text-muted">
-                  No new notifications
-                </li>
+                <li className="list-group-item text-muted">No new notifications</li>
               )}
             </ul>
           </div>

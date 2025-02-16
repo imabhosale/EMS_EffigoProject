@@ -52,8 +52,6 @@ export default function Login({ setIsLoggedIn }) {
       // Redirect based on roles
       if (trimmedRoles.includes("ROLE_ADMIN")) {
         navigate("/admin-dashboard");
-      } else if (trimmedRoles.includes("ROLE_EMPLOYEE")) {
-        navigate("/employee-dashboard");
       } else if (trimmedRoles.includes("ROLE_USER")) {
         navigate("/user-dashboard");
       } else {

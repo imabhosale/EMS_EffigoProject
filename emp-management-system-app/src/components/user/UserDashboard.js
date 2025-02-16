@@ -6,6 +6,7 @@ import UserHomePage from "./UserHomePage";
 import Dashboard from "../Dashboard";
 import EditUserProfileOwn from "./EditUserProfileOwn";
 import UserProfile from "./UserProfile";
+import Chat from "../message/Chat";
 
 export default function UserDashboard() {
   const [userEmail, setUserEmail] = useState(null);
@@ -56,10 +57,7 @@ export default function UserDashboard() {
 
       {/* Main Content Area */}
       <div className="flex-grow-1 p-4" style={{ marginLeft: "250px" }}>
-        <div className="card shadow-lg p-4">
-          {/* <h1 className="text-center">Welcome, User 👋</h1> */}
-          <p className="text-muted text-center">You are logged in as a User.</p>
-        </div>
+        
 
         {/* ✅ Fixed Routing */}
         <Routes>
@@ -67,6 +65,7 @@ export default function UserDashboard() {
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}
           <Route path="/profile/:email" element={<UserProfile />} />
           <Route path="/edit/:id" element={<EditUserProfileOwn />} />
+          <Route path="chat" element={<Chat/>} />
         </Routes>
       </div>
     </div>
