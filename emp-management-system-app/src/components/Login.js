@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
+import "bootstrap/dist/css/bootstrap.min.css";
+import { X } from "lucide-react"; // Importing the close (X) icon
 
 export default function Login({ setIsLoggedIn }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -67,7 +68,15 @@ export default function Login({ setIsLoggedIn }) {
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow-lg p-4" style={{ width: "350px" }}>
+      <div className="card shadow-lg p-4 position-relative" style={{ width: "350px" }}>
+        {/* Close (X) Icon */}
+        <X
+          size={24}
+          className="position-absolute top-0 end-0 m-2 text-muted"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        />
+
         <h2 className="text-center mb-3">Login</h2>
 
         {error && <div className="alert alert-danger">{error}</div>}
@@ -98,7 +107,7 @@ export default function Login({ setIsLoggedIn }) {
 
         <button
           onClick={handleLogin}
-          className="btn btn-primary w-100"
+          className="btn btn-primary w-100 mb-2"
           disabled={loading}
         >
           {loading ? (
@@ -114,6 +123,18 @@ export default function Login({ setIsLoggedIn }) {
             "Login"
           )}
         </button>
+
+        {/* Register Link */}
+        <p className="text-center mt-2">
+          Don't have an account?{" "}
+          <span
+            className="text-primary"
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate("/register")}
+          >
+            Register here
+          </span>
+        </p>
       </div>
     </div>
   );

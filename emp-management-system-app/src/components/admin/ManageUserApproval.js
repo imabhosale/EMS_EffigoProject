@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/Config";
 import { Button, Modal } from "react-bootstrap";
@@ -12,7 +11,6 @@ export default function ManageUserApproval() {
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newStatus, setNewStatus] = useState(""); // NEW STATE FOR STATUS SELECTION
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -31,7 +29,7 @@ export default function ManageUserApproval() {
     }
   };
 
-  const filterUsers = () => {
+  const filterUsers = useCallback(() => {
     let filtered = users;
     if (selectedStatus !== "ALL") {
       filtered = filtered.filter((user) => user.status === selectedStatus);
@@ -44,11 +42,11 @@ export default function ManageUserApproval() {
       );
     }
     setFilteredUsers(filtered);
-  };
+  }, [users, selectedStatus, searchQuery]); // Dependencies added
 
   useEffect(() => {
     filterUsers();
-  }, [searchQuery, selectedStatus]);
+  }, [filterUsers]); // Using useCallback function as dependency
 
   const handleStatusChange = (user) => {
     setSelectedUser(user);

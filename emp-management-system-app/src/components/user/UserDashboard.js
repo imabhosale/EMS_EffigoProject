@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import UserSidebar from "./UserSidebar";
 import UserHomePage from "./UserHomePage";
-import Dashboard from "../Dashboard";
 import EditUserProfileOwn from "./EditUserProfileOwn";
 import UserProfile from "./UserProfile";
 import Chat from "../message/Chat";
@@ -52,8 +51,8 @@ export default function UserDashboard() {
 
   return (
     <div className="d-flex">
-      {/* Sidebar - Fixed Position */}
-      <UserSidebar userEmail={userEmail} /> {/* ✅ Pass email to sidebar */}
+      
+      <UserSidebar userEmail={userEmail} /> {/* Pass email to sidebar */}
 
       {/* Main Content Area */}
       <div className="flex-grow-1 p-4" style={{ marginLeft: "250px" }}>

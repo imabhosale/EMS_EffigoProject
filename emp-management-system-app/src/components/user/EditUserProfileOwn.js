@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINTS } from "../config/Config";
@@ -15,14 +15,12 @@ export default function EditUserProfileOwn() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [selectedFile, setSelectedFile] = useState("");
 
-  useEffect(() => {
-    console.log(`Fetching user details for ID: ${id}`);
-    fetchUser();
-  }, [id]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
+      console.log(`Fetching user details for ID: ${id}`);
       const token = sessionStorage.getItem("jwtToken");
 
       if (!token) {
@@ -52,13 +50,17 @@ export default function EditUserProfileOwn() {
         mobile: response.data.mobile || "",
       });
 
-      // ✅ Prevent admins from editing profile
+      // Prevent admins from editing profile
       setIsAdmin(userRoles.includes("ADMIN"));
     } catch (error) {
       console.error("Error fetching user details:", error);
       alert("Failed to fetch user details.");
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   const handleChange = (field, value) => {
     setEditedUser({ ...editedUser, [field]: value });
@@ -80,7 +82,7 @@ export default function EditUserProfileOwn() {
       });
 
       alert("User updated successfully!");
-      navigate(`/user-dashboard/profile/${encodeURIComponent(editedUser.email)}`); // ✅ Redirect back to Profile Page
+      navigate(`/user-dashboard/profile/${encodeURIComponent(editedUser.email)}`);
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Failed to update user.");
@@ -101,11 +103,23 @@ export default function EditUserProfileOwn() {
             </div>
             <div className="mb-3">
               <label className="form-label">First Name</label>
-              <input type="text" className="form-control" value={editedUser.firstName} onChange={(e) => handleChange("firstName", e.target.value)} readOnly={!isEditing} />
+              <input
+                type="text"
+                className="form-control"
+                value={editedUser.firstName}
+                onChange={(e) => handleChange("firstName", e.target.value)}
+                readOnly={!isEditing}
+              />
             </div>
             <div className="mb-3">
               <label className="form-label">Last Name</label>
-              <input type="text" className="form-control" value={editedUser.lastName} onChange={(e) => handleChange("lastName", e.target.value)} readOnly={!isEditing} />
+              <input
+                type="text"
+                className="form-control"
+                value={editedUser.lastName}
+                onChange={(e) => handleChange("lastName", e.target.value)}
+                readOnly={!isEditing}
+              />
             </div>
           </div>
 
@@ -116,16 +130,22 @@ export default function EditUserProfileOwn() {
             </div>
             <div className="mb-3">
               <label className="form-label">Mobile</label>
-              <input type="text" className="form-control" value={editedUser.mobile} onChange={(e) => handleChange("mobile", e.target.value)} readOnly={!isEditing} />
+              <input
+                type="text"
+                className="form-control"
+                value={editedUser.mobile}
+                onChange={(e) => handleChange("mobile", e.target.value)}
+                readOnly={!isEditing}
+              />
             </div>
             <div className="mb-3">
               <label className="form-label">Status</label>
-              <input type="text" className="form-control" value={user.status} readOnly /> {/* ✅ Status is Read-Only */}
+              <input type="text" className="form-control" value={user.status} readOnly />
             </div>
           </div>
         </div>
 
-        {/* ✅ Add Edit Button */}
+        {/* ✅ Edit Button */}
         {!isAdmin && (
           <div className="text-center mt-3">
             {!isEditing ? (
@@ -136,6 +156,52 @@ export default function EditUserProfileOwn() {
               <button className="btn btn-success" onClick={handleSave}>
                 Save Changes
               </button>
+            )}
+          </div>
+        )}
+
+        {/* ✅ Document Viewing Section */}
+        {user.files && user.files.length > 0 && (
+          <div className="text-center mt-4">
+            <button className="btn btn-warning" onClick={() => setShowDocuments(!showDocuments)}>
+              {showDocuments ? "Hide Documents" : "View Documents"}
+            </button>
+          </div>
+        )}
+
+        {showDocuments && user.files && (
+          <div className="mt-4">
+            <h5>Total Files Uploaded: {user.files.length}</h5>
+
+            {user.files.length > 0 && (
+              <div className="mb-3">
+                <label className="form-label">Select File to View</label>
+                <select
+                  className="form-control"
+                  value={selectedFile}
+                  onChange={(e) => setSelectedFile(e.target.value)}
+                >
+                  <option value="">-- Select a File --</option>
+                  {user.files.map((file) => (
+                    <option key={file.id} value={file.fileUrl}>
+                      {file.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {selectedFile && (
+              <div className="text-center mt-3">
+                <a
+                  href={selectedFile}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                >
+                  Open Selected File
+                </a>
+              </div>
             )}
           </div>
         )}

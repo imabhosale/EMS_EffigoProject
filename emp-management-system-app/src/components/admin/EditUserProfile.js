@@ -92,7 +92,7 @@ export default function EditUserProfile() {
 
       alert("User updated successfully!");
       setIsEditing(false);
-      navigate("/admin-dashboard");
+      navigate("/admin-dashboard/find-all");
     } catch (error) {
       alert("Failed to update user.");
     }
