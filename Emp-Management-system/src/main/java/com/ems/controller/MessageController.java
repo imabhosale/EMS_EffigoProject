@@ -1,6 +1,5 @@
 package com.ems.controller;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ems.model.Contact;
 import com.ems.model.Message;
+import com.ems.model.User;
 import com.ems.service.UserService;
 import com.ems.service.serviceImpl.MessageServiceImpl;
 
@@ -57,7 +58,7 @@ public class MessageController {
 	}
 	
 	@GetMapping("/getAllContacts")
-	List<Long> getAllContacts(){
+	List<Contact> getAllContacts(){
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String userMail = authentication.getName();
 
@@ -69,7 +70,27 @@ public class MessageController {
 		
 		return messageService.getAllMessagesWithId(userId).stream()
 				.map(message-> message.getSenderId()==userId ? message.getReceiverId() : message.getSenderId())
-				.distinct()
+				.distinct() 	
+				.map(uid -> userService.findByid(uid).get())
+				.map(u -> new Contact(u))
+				.collect(Collectors.toList());
+	}
+		
+	@GetMapping("/getContact/{id}")
+	Contact getContact(@PathVariable Long id) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String userMail = authentication.getName();
+
+		System.out.println(">>>>"  + userMail);
+
+		return new Contact(userService.findByid(id).orElse(null));
+	}
+	
+	@GetMapping("/searchContact/{query}")
+	List<Contact> searchContactByQuery(@PathVariable String query){
+		return userService.findAll().stream()
+				.filter(user -> user.getEmail().startsWith(query) || user.getFirstName().startsWith(query) || user.getLastName().startsWith(query) || user.getMobile().startsWith(query))
+				.map(user -> new Contact(user))
 				.collect(Collectors.toList());
 	}
 }

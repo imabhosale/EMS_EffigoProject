@@ -30,12 +30,14 @@ export default function Login({ setIsLoggedIn }) {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        setError(data.message || "Invalid Email or Password");
+        // If response is not ok (non-2xx status), handle the error
+        const errorData = await response.text(); // Get the raw response text
+        setError(errorData || "Invalid Email or Password");
         return;
       }
+
+      const data = await response.json(); // Now it's safe to parse as JSON
 
       alert("Login successful!");
       sessionStorage.setItem("jwtToken", data.token);
@@ -64,7 +66,8 @@ export default function Login({ setIsLoggedIn }) {
     } finally {
       setLoading(false);
     }
-  };
+};
+
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">

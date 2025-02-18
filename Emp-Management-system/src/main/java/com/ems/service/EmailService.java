@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class EmailService {
 
@@ -37,6 +38,32 @@ public class EmailService {
 
             helper.setTo(adminEmails.toArray(new String[0])); // Convert list to array
             helper.setSubject("Action Required: New User Registration Approval");
+            helper.setText(htmlContent, true); // Enable HTML content
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace(); // Handle the exception properly (e.g., log it)
+        }
+    }
+
+    // New method to send email to user when their account is activated
+    
+    @Async
+    public void sendAccountActivationEmail(String userEmail, String userFirstName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            String htmlContent = "<html><body style='font-family: Arial, sans-serif; color: #333;'>"
+                    + "<p>Dear " + userFirstName + ",</p>"
+                    + "<p>We are pleased to inform you that your account has been activated!</p>"
+                    + "<p>You can now access all the services provided by our platform.</p>"
+                    + "<p>If you have any questions or need assistance, feel free to reach out to us.</p>"
+                    + "<p style='margin-top: 20px;'>Best regards,<br><strong>The Team EMS (Effigo !!)</strong></p>"
+                    + "</body></html>";
+
+            helper.setTo(userEmail);
+            helper.setSubject("Your Account is Now Active");
             helper.setText(htmlContent, true); // Enable HTML content
 
             mailSender.send(message);

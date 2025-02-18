@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 	@Autowired
 	private UserDao userDao;
-	
+
 	@Autowired
 	private RoleDao roleDo;
 
@@ -53,12 +54,18 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		User user = userDao.findByEmail(email)
 				.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
+		// ✅ Check if the user's status is ACTIVE (when using Enum)
+		System.out.println(UserStatus.ACTIVE);
+//		if (user.getStatus() != UserStatus.ACTIVE) { // Enum comparison
+//			throw new DisabledException("User account is not active. Current status: " + user.getStatus());
+//		}
+
 		return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
 				.password(user.getPassword()) // Ensure password is encoded
 				.authorities(mapRolesToAuthorities(user.getRoles())) // ✅ Convert roles to GrantedAuthority
 				.accountExpired(false).accountLocked(false).credentialsExpired(false).disabled(false).build();
 	}
-	
+
 	private List<SimpleGrantedAuthority> mapRolesToAuthorities(Set<Role> roles) {
 		return roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName())) // Ensure ROLE_prefix
 				.collect(Collectors.toList());
@@ -68,13 +75,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	public List<User> findAll() {
 		return (List<User>) userDao.findAll();
 	}
-	
-	
+
 	@Override
 	public List<User> findAllAdmins() {
-	    return userDao.findAllAdmins(); // 
+		return userDao.findAllAdmins(); //
 	}
-	
 
 	@Transactional
 	@Override
@@ -98,17 +103,14 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 		User user2 = userDao.save(user);
 //		emailService.sendEmailToAdmins(adminList, user2.getFirstName());
-		
-		  List<User> adminEmaiList=findAllAdmins();
-          
-          List<String> emaiList=adminEmaiList.stream()
-          .map(us -> us.getEmail())
-          .toList();
-          
-          System.out.println(emaiList);
-          
 
-          emailService.sendEmailToAdmins(emaiList, user2.getFirstName());
+		List<User> adminEmaiList = findAllAdmins();
+
+		List<String> emaiList = adminEmaiList.stream().map(us -> us.getEmail()).toList();
+
+		System.out.println(emaiList);
+
+		emailService.sendEmailToAdmins(emaiList, user2.getFirstName());
 		return user2;
 
 	}
@@ -130,79 +132,67 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 		User savedUser = userDao.save(user);
 
-//		List<String> adminList = new ArrayList<>();
-//		adminList.add("abhishek.bhosale@mitaoe.ac.in");
-//
-//		emailService.sendEmailToAdmins(adminList, savedUser.getFirstName());
-		
-		  List<User> adminEmaiList=findAllAdmins();
-          
-          List<String> emaiList=adminEmaiList.stream()
-          .map(us -> us.getEmail())
-          .toList();
-          
-          System.out.println(emaiList);
-          
+		List<User> adminEmaiList = findAllAdmins();
 
-          emailService.sendEmailToAdmins(emaiList, savedUser.getFirstName());
+		List<String> emaiList = adminEmaiList.stream().map(us -> us.getEmail()).toList();
+
+		System.out.println(emaiList);
+
+		emailService.sendEmailToAdmins(emaiList, savedUser.getFirstName());
 		return savedUser;
 	}
 
-	
-	
-	
 	@Transactional
 	@Override
 	public User updateUser(Long userId, UserDto updatedUserDto) {
-	    User existingUser = userDao.findById(userId)
-	            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+		User existingUser = userDao.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-	    // Update allowed fields
-	    if (updatedUserDto.getFirstName() != null) {
-	        existingUser.setFirstName(updatedUserDto.getFirstName());
-	    }
-	    if (updatedUserDto.getLastName() != null) {
-	        existingUser.setLastName(updatedUserDto.getLastName());
-	    }
-	    if (updatedUserDto.getMobile() != null) {
-	        existingUser.setMobile(updatedUserDto.getMobile());
-	    }
-	    if (updatedUserDto.getStatus() != null) {
-	        try {
-	            UserStatus newStatus = UserStatus.valueOf(updatedUserDto.getStatus().toUpperCase()); // Convert String to Enum
-	            existingUser.setStatus(newStatus);
-	        } catch (IllegalArgumentException e) {
-	            throw new RuntimeException("Invalid user status: " + updatedUserDto.getStatus());
-	        }
-	    }
+		// Update allowed fields
+		if (updatedUserDto.getFirstName() != null) {
+			existingUser.setFirstName(updatedUserDto.getFirstName());
+		}
+		if (updatedUserDto.getLastName() != null) {
+			existingUser.setLastName(updatedUserDto.getLastName());
+		}
+		if (updatedUserDto.getMobile() != null) {
+			existingUser.setMobile(updatedUserDto.getMobile());
+		}
+		if (updatedUserDto.getStatus() != null) {
+			try {
+				UserStatus newStatus = UserStatus.valueOf(updatedUserDto.getStatus().toUpperCase()); // Convert String
+																										// to Enum
+				existingUser.setStatus(newStatus);
 
-	    // Save updated user
-	    return userDao.save(existingUser);
+				// If the status is ACTIVE, send an email to the user
+				if (newStatus == UserStatus.ACTIVE) {
+					emailService.sendAccountActivationEmail(existingUser.getEmail(), existingUser.getFirstName());
+				}
+			} catch (IllegalArgumentException e) {
+				throw new RuntimeException("Invalid user status: " + updatedUserDto.getStatus());
+			}
+		}
+
+		return userDao.save(existingUser);
 	}
-
 
 	@Override
 	public Optional<User> findByid(Long id) {
-		Optional<User> user=userDao.findById(id);
+		Optional<User> user = userDao.findById(id);
 		return user;
 	}
 
-	
 	@Override
 	public Optional<User> findByEmail(String email) {
-	    return userDao.findByEmail(email);
+		return userDao.findByEmail(email);
 	}
-	
-	
-	
+
 	@Transactional
-    public void makeUserAdmin(Long userId) {
-        if (!userDao.existsById(userId)) {
-            throw new RuntimeException("User with ID " + userId + " not found.");
-        }
-        roleDo.makeUserAdmin(userId);
-    }
-	
-	
+	public void makeUserAdmin(Long userId) {
+		if (!userDao.existsById(userId)) {
+			throw new RuntimeException("User with ID " + userId + " not found.");
+		}
+		roleDo.makeUserAdmin(userId);
+	}
 
 }

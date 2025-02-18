@@ -1,6 +1,5 @@
 package com.ems.model;
 
-
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;

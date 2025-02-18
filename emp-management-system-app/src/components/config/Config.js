@@ -12,7 +12,9 @@ const API_ENDPOINTS = {
   GET_MESSAGES: `${API_BASE_URL}/message/getAll`,
   SEND_MESSAGES: `${API_BASE_URL}/message/add`,
   GET_CONTACTS: `${API_BASE_URL}/message/getAllContacts`,
-  GET_ID : `${API_BASE_URL}/users/getId`
+  GET_ID : `${API_BASE_URL}/users/getId`,
+  GET_CONTACT: `${API_BASE_URL}/message/getContact`,
+  SEARCH_CONTACT : `${API_BASE_URL}/message/searchContact`
 };
 
 export { API_BASE_URL, API_ENDPOINTS };
