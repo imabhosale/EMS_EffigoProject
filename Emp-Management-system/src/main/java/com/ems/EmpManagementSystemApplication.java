@@ -12,8 +12,7 @@ public class EmpManagementSystemApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EmpManagementSystemApplication.class, args);
-		System.out.println("hiii");
+		System.out.println("Application Started");
 	}
-	
 
 }

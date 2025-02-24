@@ -55,7 +55,7 @@ public class WebSecurityConfiguration {
     	
         http.cors().and().csrf().disable()
             .authorizeRequests()
-            .requestMatchers("/users/authenticate", "/users/register").permitAll()
+            .requestMatchers("/users/authenticate", "/users/register", "/users/key").permitAll()
             .requestMatchers("/users/find/all").hasRole(Role.ADMIN.toString())
             .requestMatchers("/users/stats").hasRole(Role.ADMIN.toString())
             .anyRequest().authenticated()
@@ -93,7 +93,7 @@ public class WebSecurityConfiguration {
      */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/users/authenticate", "/users/register");
+        return (web) -> web.ignoring().requestMatchers("/users/authenticate", "/users/register", "/users/key");
     }
 
     /**

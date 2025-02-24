@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { X } from "lucide-react"; // Importing the close (X) icon
-
+import axios from "axios";
+import forge from "node-forge";
 export default function Login({ setIsLoggedIn }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [publicKey, setPublicKey] = useState();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,10 +26,15 @@ export default function Login({ setIsLoggedIn }) {
     setError("");
 
     try {
+
+      const formDataSending = {...formData, "password":getBase64Encrypted(formData.password, convertToPEM(publicKey))}
+      const jsonFormData = JSON.stringify(formDataSending);
+      console.log(jsonFormData);
+
       const response = await fetch("http://localhost:8999/users/authenticate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: jsonFormData,
       });
 
       if (!response.ok) {
@@ -37,7 +44,7 @@ export default function Login({ setIsLoggedIn }) {
         return;
       }
 
-      const data = await response.json(); // Now it's safe to parse as JSON
+      const data = await response.json();
 
       alert("Login successful!");
       sessionStorage.setItem("jwtToken", data.token);
@@ -66,8 +73,42 @@ export default function Login({ setIsLoggedIn }) {
     } finally {
       setLoading(false);
     }
-};
+  };
 
+  const fetchPublicKey = async () => {
+    try {
+      const key_response = await axios.get("http://localhost:8999/users/key");
+
+      setPublicKey(key_response.data.key);
+    } 
+    catch (e){
+      console.error(e.message);
+    }
+  };
+
+  useEffect(()=>{
+    fetchPublicKey();
+  },[])
+
+  useEffect(() => {
+    if(publicKey){
+      console.log("Public Key Changed:");
+      console.log(publicKey);
+      console.log(convertToPEM(publicKey));
+      console.log(getBase64Encrypted("Hello", convertToPEM(publicKey)));
+    }
+  }, [publicKey])
+
+  const getBase64Encrypted = (message, pemKey) => {
+    const pk = forge.pki.publicKeyFromPem(pemKey);
+    return forge.util.encode64(pk.encrypt(message));
+  }
+  
+  const convertToPEM = (publicKey) =>{
+    return "-----BEGIN PUBLIC KEY-----\n" +
+                publicKey +
+          "\n-----END PUBLIC KEY-----";
+  }
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">

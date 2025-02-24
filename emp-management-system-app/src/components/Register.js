@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
+import forge from "node-forge";
 
 export default function Register() {
   const navigate = useNavigate(); // Hook for navigation
+  const [publicKey, setPublicKey] = useState();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -11,7 +14,7 @@ export default function Register() {
     email: "",
     mobile: "",
     password: "",
-    // status: "",
+    status: "PENDING",
   });
 
   const [errors, setErrors] = useState({});
@@ -36,7 +39,7 @@ export default function Register() {
       newErrors.mobile = "Mobile number must be 10 digits";
     }
 
-    if (!formData.status) newErrors.status = "Status is required";
+    // if (!formData.status) newErrors.status = "Status is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -61,11 +64,20 @@ export default function Register() {
       return;
     }
 
+
+
+
     try {
+
+      const formDataSending = {...formData, "password":getBase64Encrypted(formData.password, convertToPEM(publicKey))}
+      const jsonFormData = JSON.stringify(formDataSending);
+      console.log("Begining to send form...");
+      console.log(jsonFormData);
+
       const response = await fetch("http://localhost:8999/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: jsonFormData,
       });
 
       const data = await response.json();
@@ -80,6 +92,41 @@ export default function Register() {
       showToast("Something went wrong. Please try again later.", "danger");
     }
   };
+
+  const fetchPublicKey = async () => {
+    try {
+      const key_response = await axios.get("http://localhost:8999/users/key");
+
+      setPublicKey(key_response.data.key);
+    } 
+    catch (e){
+      console.error(e.message);
+    }
+  };
+
+  useEffect(()=>{
+      fetchPublicKey();
+  },[])
+
+  useEffect(() => {
+    if(publicKey){
+      console.log("Public Key Changed:");
+      console.log(publicKey);
+      console.log(convertToPEM(publicKey));
+      console.log(getBase64Encrypted("Hello", convertToPEM(publicKey)));
+    }
+  }, [publicKey])
+
+  const getBase64Encrypted = (message, pemKey) => {
+    const pk = forge.pki.publicKeyFromPem(pemKey);
+    return forge.util.encode64(pk.encrypt(message));
+  }
+  
+  const convertToPEM = (publicKey) =>{
+    return "-----BEGIN PUBLIC KEY-----\n" +
+                publicKey +
+          "\n-----END PUBLIC KEY-----";
+  }
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
@@ -169,7 +216,7 @@ export default function Register() {
               {errors.mobile && <div className="invalid-feedback">{errors.mobile}</div>}
             </div>
 
-            <div className="mb-3">
+           {/* div className="mb-3">
               <label className="form-label">Status</label>
               <select
                 name="status"
@@ -183,7 +230,7 @@ export default function Register() {
                 <option value="INACTIVE">INACTIVE</option>
               </select>
               {errors.status && <div className="invalid-feedback">{errors.status}</div>}
-            </div>
+            </div> < */}
           </div>
         </div>
 

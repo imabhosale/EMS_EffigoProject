@@ -4,11 +4,14 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.amazonaws.services.s3.model.Encryption;
 import com.ems.model.Entity.File;
 import com.ems.repository.FileDao;
 import com.ems.service.FileService;
+import com.ems.service.serviceImpl.EncryptionService;
 import com.ems.util.Status;
 import com.ems.util.StatusCounts;
 import jakarta.transaction.Transactional;
@@ -41,6 +44,9 @@ import com.ems.service.serviceImpl.AuthenticationService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 /**
  * Rest Controller for Users end-point
  */
@@ -65,10 +71,23 @@ public class UserController {
 	@Autowired
 	private FileService fileService;
 
+	@Autowired
+	private EncryptionService encryptionService;
+
 	// Authentication and Login/Registration
 
+	@GetMapping("/key")
+	public ResponseEntity<Map<String, String>> getRSAEncryptionKey(){
+		return ResponseEntity.ok(Map.of("key",encryptionService.getPublicKey()));
+	}
+
 	@PostMapping("/authenticate")
-	public ResponseEntity<?> authenticateUser(@RequestBody LoginUser loginUser) throws AuthenticationException {
+	public ResponseEntity<?> authenticateUser(@RequestBody LoginUser loginUser) throws AuthenticationException, IllegalBlockSizeException, BadPaddingException {
+		log.info("Received Password: {}", loginUser.getPassword());
+
+		loginUser.setPassword(encryptionService.decodeMessage(loginUser.getPassword()));
+		log.info("Login User password set to decoded form: {}", loginUser.getPassword());
+
 		Optional<AuthToken> authToken = authenticationService.generateToken(loginUser);
 
 		if (authToken.isPresent() && userService.getUserStatusByEmail(loginUser.getEmail())== Status.ACTIVE) {
@@ -86,7 +105,8 @@ public class UserController {
 	}
 
 	@PostMapping("/register")
-	public UserDto registerUser(@RequestBody UserDto user) {
+	public UserDto registerUser(@RequestBody UserDto user) throws IllegalBlockSizeException, BadPaddingException {
+		user.setPassword(encryptionService.decodeMessage(user.getPassword()));
 		return userService.registerUser(user);
 	}
 
