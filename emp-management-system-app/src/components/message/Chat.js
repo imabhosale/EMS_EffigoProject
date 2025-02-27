@@ -151,10 +151,12 @@ function Chat() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             console.log("Setting Query Contact List");
-            setTestResponse(response);
+            setTestResponse(response);  
             setQueryContactList(response.data)
         } catch (error) {
             console.error(error.message);
+        } finally{
+            console.log()
         }
     }
 

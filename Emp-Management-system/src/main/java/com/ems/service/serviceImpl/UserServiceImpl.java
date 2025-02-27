@@ -7,9 +7,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.ems.util.Status;
+import com.ems.util.StatusCounts;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,15 +19,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ems.model.Role;
-import com.ems.model.User;
-import com.ems.model.UserDto;
-import com.ems.model.UserStatus;
+import com.ems.model.Entity.Role;
+import com.ems.model.Entity.User;
+import com.ems.model.dto.UserDto;
 import com.ems.repository.RoleDao;
 import com.ems.repository.UserDao;
-import com.ems.service.EmailService;
 import com.ems.service.RoleService;
 import com.ems.service.UserService;
+import com.ems.util.UserStatus;
 
 @Service(value = "userService")
 public class UserServiceImpl implements UserDetailsService, UserService {
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	}
 
 	@Override
-	public List<User> findAll() {
+	public List<User> getAllUser() {
 		return (List<User>) userDao.findAll();
 	}
 
@@ -96,13 +96,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 			roles.add(adminRole);
 		}
 
-//		List<String> adminList = new ArrayList<>();
-//		adminList.add("abhishek.bhosale@mitaoe.ac.in");
-
 		user.setRoles(roles);
 
 		User user2 = userDao.save(user);
-//		emailService.sendEmailToAdmins(adminList, user2.getFirstName());
 
 		List<User> adminEmaiList = findAllAdmins();
 
@@ -178,8 +174,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 	@Override
 	public Optional<User> findByid(Long id) {
-		Optional<User> user = userDao.findById(id);
-		return user;
+        return userDao.findById(id);
 	}
 
 	@Override
@@ -195,4 +190,30 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		roleDo.makeUserAdmin(userId);
 	}
 
+	public StatusCounts getStatusCounts(){
+		return new StatusCounts(userDao.countByStatus(UserStatus.ACTIVE),
+				          userDao.countByStatus(UserStatus.INACTIVE),
+				          userDao.countByStatus(UserStatus.PENDING));
+	}
+
+	@Override
+	public UserDto registerUser(UserDto userDto) {
+		this.save(userDto);
+		return userDto;
+	}
+
+	@Override
+	public Optional<Long> getUserIdWithEmail(String email) {
+		return findByEmail(email).map(User::getId);
+	}
+
+	@Override
+	public Status getUserStatusByEmail(String email) {
+		String status = userDao.getStatusByEmail(email);
+        return switch (status) {
+            case "ACTIVE" -> Status.ACTIVE;
+            case "INACTIVE" -> Status.INACTIVE;
+            default -> Status.PENDING;
+        };
+	}
 }

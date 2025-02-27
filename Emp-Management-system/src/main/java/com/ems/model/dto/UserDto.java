@@ -1,8 +1,11 @@
-package com.ems.model;
+package com.ems.model.dto;
 
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+
+import com.ems.model.Entity.User;
+import com.ems.util.UserStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

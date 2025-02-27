@@ -1,9 +1,13 @@
 package com.ems.service;
 
-import com.ems.model.User;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import com.ems.model.Entity.User;
+
 public interface FileUploaderService {
-    List<User> uploadAndCreateUsers(MultipartFile file);
+
+	List<User> uploadAndCreateUsers(MultipartFile file);
+
 }

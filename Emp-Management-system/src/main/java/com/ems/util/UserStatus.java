@@ -1,4 +1,4 @@
-package com.ems.model;
+package com.ems.util;
 
 public enum UserStatus {
     ACTIVE,

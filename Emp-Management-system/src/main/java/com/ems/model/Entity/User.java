@@ -1,9 +1,10 @@
-package com.ems.model;
+package com.ems.model.Entity;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import com.ems.util.UserStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -52,7 +53,7 @@ public class User {
     private String password;
 
     @Column(name = "registered_at", nullable = false, updatable = false)
-    private Instant registeredAt; // Use Instant instead of Timestamp
+    private Instant registeredAt;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -65,17 +66,15 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "ROLE_ID")
     )
     private Set<Role> roles;
-   
+    
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true
     		,fetch = FetchType.LAZY)
     @JsonManagedReference 
     private List<File> files;
-
+    
     @PrePersist
     protected void onCreate() {
         this.registeredAt = Instant.now(); // Use Instant.now() instead of new Timestamp(System.currentTimeMillis())
     }
 }
-
-

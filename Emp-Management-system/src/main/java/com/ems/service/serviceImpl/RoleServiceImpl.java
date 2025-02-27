@@ -4,7 +4,7 @@ package com.ems.service.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ems.model.Role;
+import com.ems.model.Entity.Role;
 import com.ems.repository.RoleDao;
 import com.ems.service.RoleService;
 
@@ -17,7 +17,6 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role findByName(String name) {
         // Find role by name using the roleDao
-        Role role = roleDao.findRoleByName(name);
-        return role;
+        return roleDao.findRoleByName(name);
     }
 }

@@ -1,4 +1,4 @@
-package com.ems.model;
+package com.ems.model.Entity;
 
 
 import jakarta.persistence.Column;
@@ -22,6 +22,4 @@ public class Role {
     @Column
     private String description;
     
-
-
-    }
+}

@@ -1,12 +1,9 @@
 package com.ems.repository;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.ems.model.File;
-import com.ems.model.User;
+import com.ems.model.Entity.File;
 
 public interface FileDao extends JpaRepository<File, Long> {
-	List<File> findByUser(User user);
+	
 }

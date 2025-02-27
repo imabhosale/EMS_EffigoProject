@@ -19,11 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ems.model.Role;
-import com.ems.model.User;
-import com.ems.model.UserDto;
+import com.ems.model.Entity.Role;
+import com.ems.model.Entity.User;
+import com.ems.model.dto.UserDto;
 import com.ems.repository.UserDao;
-import com.ems.service.EmailService;
 import com.ems.service.FileUploaderService;
 import com.ems.service.RoleService;
 import com.ems.service.UserService;

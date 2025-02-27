@@ -1,4 +1,4 @@
-package com.ems.model;
+package com.ems.model.Entity;
 
 import java.time.LocalDateTime;
 
@@ -11,23 +11,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class AccessHistory {
+@NoArgsConstructor
+@Data
+public class Message {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	Long id;
 	
-	Long userId;
+	Long senderId;
+	Long receiverId;
+	String Message;
 	LocalDateTime time;
-	Boolean Status;
-	
-	public AccessHistory(Long userId, LocalDateTime time, Boolean status) {
+
+	public Message(Long senderId, Long receiverId, String message, LocalDateTime time) {
 		super();
-		this.userId = userId;
+		this.senderId = senderId;
+		this.receiverId = receiverId;
+		Message = message;
 		this.time = time;
-		this.Status = status;
 	}
-	
+
 }

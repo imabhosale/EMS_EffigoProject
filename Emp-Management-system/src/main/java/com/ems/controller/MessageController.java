@@ -1,10 +1,15 @@
 package com.ems.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.ems.service.serviceImpl.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,11 +21,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ems.model.Contact;
-import com.ems.model.Message;
-import com.ems.model.User;
+import com.ems.model.Entity.Message;
 import com.ems.service.UserService;
 import com.ems.service.serviceImpl.MessageServiceImpl;
 
+/**
+ * Rest Controller for managing <b>Messages</b> and <b>Contacts</b> (For purpose of messaging feature).
+ */
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/message")
@@ -31,8 +38,10 @@ public class MessageController {
 	
 	@Autowired 
 	private UserService userService;
-	
-	
+
+	@Autowired
+	AuthenticationService authenticationService;
+
 	@PostMapping("/add")
 	String addMessage(@RequestBody Message message) {
 		message.setTime(LocalDateTime.now());
@@ -42,55 +51,31 @@ public class MessageController {
 	
 	@GetMapping("/getAll/{oppositionId}")
 	List<Message> getMessages(@PathVariable Long oppositionId){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String userMail = authentication.getName();
+		String userMail = authenticationService.getAuthenticatedUserMail();
 
-		
-		System.out.println(">>>>"  + userMail);
-		
-		Long userId = userService.findAll().stream()
-				.filter(user_ -> userMail.equals(user_.getEmail()))
-				.findFirst().get().getId();	
-		
-		
-		System.out.println("UID" + userId);
-		return messageService.getAllMessagesWithId(userId, oppositionId);
+		return userService.getUserIdWithEmail(userMail)
+				.map(userId -> messageService.getAllMessagesWithId(userId, oppositionId))
+				.orElse(Collections.emptyList());
 	}
 	
 	@GetMapping("/getAllContacts")
 	List<Contact> getAllContacts(){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String userMail = authentication.getName();
+		String userMail = authenticationService.getAuthenticatedUserMail();
 
-		System.out.println(">>>>"  + userMail);
+		Long userId = userService.getUserIdWithEmail(userMail).orElse(0L);
 		
-		Long userId = userService.findAll().stream()
-				.filter(user_ -> userMail.equals(user_.getEmail()))
-				.findFirst().get().getId();	
-		
-		return messageService.getAllMessagesWithId(userId).stream()
-				.map(message-> message.getSenderId()==userId ? message.getReceiverId() : message.getSenderId())
-				.distinct() 	
-				.map(uid -> userService.findByid(uid).get())
-				.map(u -> new Contact(u))
-				.collect(Collectors.toList());
+		return messageService.getAllContacts(userId);
 	}
 		
 	@GetMapping("/getContact/{id}")
-	Contact getContact(@PathVariable Long id) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String userMail = authentication.getName();
-
-		System.out.println(">>>>"  + userMail);
-
-		return new Contact(userService.findByid(id).orElse(null));
+	ResponseEntity<Contact> getContact(@PathVariable Long id) {
+		return messageService.getContact(id)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/searchContact/{query}")
 	List<Contact> searchContactByQuery(@PathVariable String query){
-		return userService.findAll().stream()
-				.filter(user -> user.getEmail().startsWith(query) || user.getFirstName().startsWith(query) || user.getLastName().startsWith(query) || user.getMobile().startsWith(query))
-				.map(user -> new Contact(user))
-				.collect(Collectors.toList());
+		return messageService.searchContacts(query);
 	}
 }
