@@ -37,9 +37,6 @@ public class FileController {
     public ResponseEntity<String> uploadFile(
         @PathVariable Long userId,
         @RequestParam("file") MultipartFile file) {
-
-    	
-    	
     	
     	User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User with ID " + userId + " not found"));

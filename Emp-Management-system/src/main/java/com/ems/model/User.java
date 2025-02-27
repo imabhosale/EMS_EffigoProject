@@ -65,22 +65,13 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "ROLE_ID")
     )
     private Set<Role> roles;
-    
-//<<<<<<< HEAD
-//    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-//    @JsonManagedReference
-//    private List<File> files;
-//    
-//=======
+   
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true
     		,fetch = FetchType.LAZY)
     @JsonManagedReference 
     private List<File> files;
-    
 
-  
-//>>>>>>> origin/main
     @PrePersist
     protected void onCreate() {
         this.registeredAt = Instant.now(); // Use Instant.now() instead of new Timestamp(System.currentTimeMillis())

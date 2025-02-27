@@ -145,7 +145,6 @@ public class UserController {
 	@PreAuthorize("hasRole('USER')")
 	@GetMapping("/get/{id}")
 	public ResponseEntity<Optional<User>> GetUserByUserID(@PathVariable Long id) {
-		System.out.println("abhiii " + id);
 		Optional<User> updatedUser = userService.findByid(id);
 		return ResponseEntity.ok(updatedUser);
 	}
